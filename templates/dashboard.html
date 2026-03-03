@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - DDoS Shield{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+
+    <!-- Total Requests -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-5">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-indigo-700/30 text-indigo-400">
+                <i class="mdi mdi-chart-line mdi-24px"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-gray-400 text-sm">Total Requests</h3>
+                <p id="total-req" class="text-2xl font-semibold text-white">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Threats -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-5">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-red-700/30 text-red-400">
+                <i class="mdi mdi-alert-circle mdi-24px"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-gray-400 text-sm">Active Threats</h3>
+                <p id="active-threats" class="text-2xl font-semibold text-white">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blocked IPs -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-5">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-700/30 text-yellow-400">
+                <i class="mdi mdi-shield-lock mdi-24px"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-gray-400 text-sm">Blocked IPs</h3>
+                <p id="blocked-ips" class="text-2xl font-semibold text-white">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Whitelisted IPs -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-5">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-700/30 text-green-400">
+                <i class="mdi mdi-shield-check mdi-24px"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-gray-400 text-sm">Whitelisted IPs</h3>
+                <p id="whitelisted-ips" class="text-2xl font-semibold text-white">0</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Real Traffic Chart -->
+    <div class="lg:col-span-2 bg-gray-800 border border-gray-700 rounded-lg p-5">
+        <h3 class="text-lg font-medium text-gray-200 mb-3">Traffic Graph</h3>
+        <div class="h-64">
+            <canvas id="trafficChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg">
+        <div class="border-b border-gray-700 px-4 py-3">
+            <h3 class="text-lg font-medium text-gray-200">Recent Alerts</h3>
+        </div>
+        <div id="alerts-box" class="max-h-64 overflow-y-auto divide-y divide-gray-700">
+            <div class="px-4 py-3 text-gray-500 text-center text-sm">
+                No alerts yet
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Active Connections Table -->
+<div class="bg-gray-800 border border-gray-700 rounded-lg mt-6 overflow-hidden">
+    <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
+        <h3 class="text-lg font-medium text-gray-200">Active Connections</h3>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-900 text-gray-400 uppercase text-xs">
+                <tr>
+                    <th class="px-4 py-2 text-left">IP Address</th>
+                    <th class="px-4 py-2 text-left">Requests</th>
+                    <th class="px-4 py-2 text-left">Rate (req/s)</th>
+                    <th class="px-4 py-2 text-left">Last Seen</th>
+                </tr>
+            </thead>
+            <tbody id="conn-table" class="divide-y divide-gray-700">
+                <tr>
+                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">
+                        No active connections
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+// ======================= Chart.js Setup =======================
+let ctx = document.getElementById('trafficChart').getContext('2d');
+let trafficChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Requests Per Second",
+            data: [],
+            borderWidth: 2,
+            borderColor: "rgb(99, 102, 241)", // Tailwind Indigo-500
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                ticks: { color: "#9CA3AF" }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: "#9CA3AF" }
+            }
+        }
+    }
+});
+
+// ======================= Dashboard Update Functions =======================
+async function updateStats() {
+    const res = await fetch('/stats');
+    const data = await res.json();
+    document.getElementById("total-req").innerText = data.total;
+    document.getElementById("active-threats").innerText = data.active;
+    document.getElementById("blocked-ips").innerText = data.blocked;
+    document.getElementById("whitelisted-ips").innerText = data.whitelisted;
+}
+
+async function updateConnections() {
+    const res = await fetch('/connections');
+    const data = await res.json();
+    const table = document.getElementById("conn-table");
+    table.innerHTML = "";
+
+    if (data.length === 0) {
+        table.innerHTML = `<tr><td colspan="4" class="px-4 py-3 text-center text-gray-500">No active connections</td></tr>`;
+        return;
+    }
+
+    data.forEach(row => {
+        table.innerHTML += `
+            <tr class="divide-y divide-gray-700">
+                <td class="px-4 py-2">${row.ip}</td>
+                <td class="px-4 py-2">${row.rps}</td>
+                <td class="px-4 py-2">${row.rps}/s</td>
+                <td class="px-4 py-2">${row.last}</td>
+            </tr>`;
+    });
+}
+
+async function updateAlerts() {
+    const res = await fetch('/alerts');
+    const data = await res.json();
+    const box = document.getElementById("alerts-box");
+    box.innerHTML = "";
+
+    if (data.length === 0) {
+        box.innerHTML = `<div class="px-4 py-3 text-center text-gray-500 text-sm">No alerts yet</div>`;
+        return;
+    }
+
+    data.slice(-20).reverse().forEach(msg => {
+        box.innerHTML += `
+            <div class="px-4 py-2 text-red-400 text-sm border-b border-gray-700">
+                ${msg}
+            </div>`;
+    });
+}
+
+async function updateChart() {
+    const res = await fetch('/chart-data');
+    const data = await res.json();
+    trafficChart.data.labels = data.labels.slice(-30);
+    trafficChart.data.datasets[0].data = data.values.slice(-30);
+    trafficChart.update();
+}
+
+// ======================= Refresh Loop =======================
+function refreshAll() {
+    updateStats();
+    updateConnections();
+    updateAlerts();
+    updateChart();
+}
+
+setInterval(refreshAll, 2000);
+refreshAll();
+</script>
+
+{% endblock %}

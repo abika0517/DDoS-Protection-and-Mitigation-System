@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DDoS Dashboard{% endblock %}</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+</head>
+
+<body class="bg-gray-900 text-gray-100 font-sans">
+<div class="flex h-screen w-full">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <div class="p-5 border-b border-gray-700">
+            <h1 class="text-lg font-bold tracking-wide">Defend Sphere</h1>
+            <p class="text-xs text-gray-400">Real-Time Network Defense</p>
+        </div>
+
+        <nav class="flex-1 p-2 space-y-1">
+            <a href="/" class="flex items-center px-4 py-2 rounded hover:bg-gray-700">
+                <i class="mdi mdi-view-dashboard text-indigo-400 mr-3"></i> Dashboard
+            </a>
+            <a href="/settings" class="flex items-center px-4 py-2 rounded hover:bg-gray-700">
+                <i class="mdi mdi-cog-outline text-yellow-400 mr-3"></i> Tuning Panel
+            </a>
+            <a href="/blacklist" class="flex items-center px-4 py-2 rounded hover:bg-gray-700">
+                <i class="mdi mdi-shield-lock-outline text-red-400 mr-3"></i> Blacklist
+            </a>
+            <a href="/whitelist" class="flex items-center px-4 py-2 rounded hover:bg-gray-700">
+                <i class="mdi mdi-shield-check-outline text-green-400 mr-3"></i> Whitelist
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+            <h2 class="text-xl font-semibold">{% block header %}{% endblock %}</h2>
+            <div class="flex items-center text-sm text-gray-300">
+                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span> Online
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

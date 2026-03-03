@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Whitelist{% endblock %}
+{% block header %}Whitelist{% endblock %}
+
+{% block content %}
+
+<form method="POST" class="bg-gray-800 border border-gray-700 rounded p-4 mb-6 flex space-x-3">
+    <input type="text" name="ip" placeholder="IP Address" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded w-48">
+    <input type="text" name="purpose" placeholder="Purpose" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded flex-1">
+    <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add</button>
+</form>
+
+<table class="w-full text-sm bg-gray-800 border border-gray-700 rounded">
+    <thead class="bg-gray-900 text-gray-400 uppercase text-xs">
+        <tr>
+            <th class="px-4 py-2 text-left">IP</th>
+            <th class="px-4 py-2 text-left">Purpose</th>
+            <th class="px-4 py-2 text-left">Added</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-700">
+        {% for row in wl %}
+        <tr>
+            <td class="px-4 py-2">{{ row.ip }}</td>
+            <td class="px-4 py-2">{{ row.purpose }}</td>
+            <td class="px-4 py-2">{{ row.added_at }}</td>
+            <td class="px-4 py-2">
+                <a href="/whitelist/delete/{{ row.ip }}" class="text-red-400 hover:text-red-300">Remove</a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% if wl|length == 0 %}
+        <tr>
+            <td colspan="4" class="px-4 py-3 text-center text-gray-500">No entries</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+{% endblock %}

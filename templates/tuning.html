@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Tuning Panel{% endblock %}
+{% block header %}Tuning Panel{% endblock %}
+
+{% block content %}
+
+<form method="POST" class="bg-gray-800 border border-gray-700 rounded-lg p-6 space-y-4 w-full max-w-lg">
+
+    <div>
+        <label class="block text-sm text-gray-400 mb-1">Max Requests / Second</label>
+        <input type="number" name="max_rps" value="{{ s.max_rps }}" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded">
+    </div>
+
+    <div>
+        <label class="block text-sm text-gray-400 mb-1">Sensitivity</label>
+        <select name="sensitivity" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded">
+            <option value="low" {% if s.sensitivity=='low' %}selected{% endif %}>Low</option>
+            <option value="medium" {% if s.sensitivity=='medium' %}selected{% endif %}>Medium</option>
+            <option value="high" {% if s.sensitivity=='high' %}selected{% endif %}>High</option>
+        </select>
+    </div>
+
+    <div class="flex items-center space-x-2">
+        <input type="checkbox" name="auto_block" {% if s.auto_block %}checked{% endif %}>
+        <label class="text-sm text-gray-400">Auto Block Suspicious IPs</label>
+    </div>
+
+    <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white">
+        Save Settings
+    </button>
+
+</form>
+
+{% endblock %}
