@@ -1,5 +1,3 @@
-Perfect 👌 Below is a clean, professional **README.md** file for your GitHub repository.
-You can copy and paste this directly into your `README.md`.
 
 ---
 
